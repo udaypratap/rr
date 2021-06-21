@@ -3,9 +3,12 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use Storage;
 
 class HomeController extends Controller
 {
+    private $num = 0;
+    private $latestnum = 0;
     /**
      * Create a new controller instance.
      *
@@ -23,6 +26,29 @@ class HomeController extends Controller
      */
     public function index()
     {
+        return view('home');
+    }
+
+    private function latestXKCDnumver(){
+        $raw = json_decode(file_get_contents('http://xkcd.com/info.0.json'), true); 
+        $this->latestnum = $raw['num'];
+    }
+
+    /**
+     * [readingRights used to send the mail to loggedin user]
+     * @param  Request $request [request params]
+     * @return [type]           [view the page]
+     */
+    public function readingRights(Request $request){
+        $this->latestXKCDnumver();
+        $this->num = rand(1, $this->latestnum);
+        $rawdata = json_decode(file_get_contents('http://xkcd.com/'.$this->num.'/info.0.json'), true); 
+        $imgurl = $rawdata['img'];
+        $contents = file_get_contents($imgurl);
+        $name = $this->num . '-' . substr($imgurl, strrpos($imgurl, '/') + 1);
+        Storage::disk('public')->put($name, $contents, 'public');
+        $storageurl = url(Storage::disk('public')->url($name));
+dd($rawdata, $storageurl);
         return view('home');
     }
 }
