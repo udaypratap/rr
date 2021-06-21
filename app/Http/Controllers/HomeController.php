@@ -4,6 +4,9 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Storage;
+use App\Mail\XkcdMail;
+use Mail;
+use Auth;
 
 class HomeController extends Controller
 {
@@ -48,7 +51,16 @@ class HomeController extends Controller
         $name = $this->num . '-' . substr($imgurl, strrpos($imgurl, '/') + 1);
         Storage::disk('public')->put($name, $contents, 'public');
         $storageurl = url(Storage::disk('public')->url($name));
-dd($rawdata, $storageurl);
-        return view('home');
+        $storagepath = Storage::disk('public')->path($name);
+
+        $maildata = [];
+        $maildata['subject'] = $rawdata['safe_title'];
+        $maildata['message'] = $rawdata['transcript'] . "\n" . $rawdata['alt'];
+        $maildata['imageurl'] = $storageurl;
+        $maildata['storagepath'] = $storagepath;
+
+        Mail::to(Auth::user()->email)->send(new XkcdMail($maildata));
+
+        return redirect()->route('home')->with('status', 'Mail Send.');
     }
 }
