@@ -14,7 +14,8 @@
                         </div>
                     @endif
 
-                    You are logged in!
+                    Hi Reading Rights, 
+                    <a href="{{ route('reading-rights') }}">Click Here </a> to send the mail with XKCD data 
                 </div>
             </div>
         </div>
